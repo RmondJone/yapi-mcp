@@ -9,7 +9,7 @@ export function parseInterfaceDetail(interace: YapiInterface, categoryName: stri
     method: interace.method.toUpperCase(),
     name: interace.title,
     category: categoryName,
-    description: interace.description || '',
+    description: interace.desc || interace.description || '',
     reqBody: parseReqBody(interace),
     resBody: parseResBody(interace),
   };

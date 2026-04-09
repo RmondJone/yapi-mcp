@@ -1,0 +1,1 @@
+- 生成 MCP函数接口时，需要参考工程中的YAPI-OPENAPI.md里的Yapi对外公开接口

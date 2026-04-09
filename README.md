@@ -79,6 +79,7 @@ claude mcp add --scope user yapi-mcp -- npx -y @rmondjone/yapi-mcp
 # YAPI 配置
 YAPI_URL=https://yapi.xxxxxx.com
 YAPI_TOKEN=your_token_here
+YAPI_PROJECT_ID=xxxx
 ```
 
 **如何获取 Token：**
@@ -90,25 +91,46 @@ YAPI_TOKEN=your_token_here
 
 ### MCP 工具
 
-| 工具 | 参数 | 说明 |
-|------|------|------|
-| `search_interfaces` | `keyword: string` | 根据关键字搜索接口 |
-| `get_interface_by_path` | `path: string` | 根据路径获取接口详情 |
-| `get_project_categories` | - | 获取项目接口分类 |
-| `get_category_interfaces` | `categoryId: number` | 获取分类下接口列表 |
-| `get_project_info` | - | 获取项目信息和规则路径 |
+| 工具 | 参数 | 说明                    |
+|------|------|-----------------------|
+| `get_project_info` | - | 获取当前项目信息（含规则文件路径）     |
+| `get_project_detail` | - | 获取YAPI项目详细信息（从 YAPI）  |
+| `get_cat_menu` | - | 获取分类列表                |
+| `get_interface_detail` | `id: number` | 根据接口 ID 获取完整接口信息      |
+| `get_category_interfaces` | `catid: number, page?, limit?` | 获取指定分类下的接口列表          |
+| `get_interface_menu` | - | 获取接口菜单列表（含分类及接口）      |
+| `get_interface_list` | `page?, limit?` | 获取项目下所有接口列表           |
+| `add_category` | `name, desc?, project_id?` | 新增接口分类                |
+| `add_interface` | `title, catid, path, method, ...` | 新增接口                  |
+| `save_interface` | `title, catid, path, method, id?` | 新增或更新接口               |
+| `update_interface` | `id, title, catid, path, method, ...` | 更新已有接口                |
+| `import_data` | `type, merge?, json?, url?` | 导入 Swagger/Postman 数据 |
+| `search_interface` | `keyword, page?, limit?` | 模糊搜索接口（标题/路径/方法）      |
+| `get_interface_by_path` | `path, method?` | 根据完整路径精确查找接口          |
 
 ### 使用示例
 
 ```
-# 搜索用户相关接口
-调用 search_interfaces，keyword="用户"
-
-# 获取登录接口详情
-调用 get_interface_by_path，path="/api/user/login"
-
 # 获取项目信息（含规则文件）
 调用 get_project_info
+
+# 模糊搜索用户相关接口
+调用 search_interface，keyword="用户"
+
+# 根据完整路径精确查找接口
+调用 get_interface_by_path，path="/api/user/info"，method="GET"
+
+# 根据接口 ID 获取详情
+调用 get_interface_detail，id=123
+
+# 获取指定分类下的接口
+调用 get_interface_menu
+
+# 新增接口分类
+调用 add_category，name="新分类"
+
+# 导入 Swagger 数据
+调用 import_data，type="swagger"，url="https://api.example.com/swagger.json"
 ```
 
 ## 📋 输出格式

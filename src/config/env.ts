@@ -4,6 +4,7 @@ import * as path from 'path';
 export interface YapiConfig {
   url: string;
   token: string;
+  projectId?: string;
   projectPath: string;
 }
 
@@ -38,6 +39,7 @@ export function parseEnvFile(envPath: string): YapiConfig {
 
   let url = '';
   let token = '';
+  let projectId = '';
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -49,6 +51,7 @@ export function parseEnvFile(envPath: string): YapiConfig {
     const value = valueParts.join('=').trim();
     if (key === 'YAPI_URL') url = value;
     if (key === 'YAPI_TOKEN') token = value;
+    if (key === 'YAPI_PROJECT_ID') projectId = value;
   }
 
   if (!url || !token) {
@@ -58,6 +61,7 @@ export function parseEnvFile(envPath: string): YapiConfig {
   return {
     url: url.replace(/\/$/, ''), // 移除末尾斜杠
     token,
+    projectId,
     projectPath: path.dirname(envPath),
   };
 }
