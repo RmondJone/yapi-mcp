@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.guo-han-lin/yapi-mcp",
+  "title": "YAPI MCP",
+  "description": "获取 YAPI 接口定义的 MCP 工具，自动读取项目 .env 配置",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guo-han-lin/yapi-mcp.git"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "name": "yapi-mcp",
+      "version": "1.0.0",
+      "transport": "stdio",
+      "environmentVariables": {}
+    }
+  ]
+}

@@ -1,34 +1,79 @@
 # YAPI MCP
 
-一个用于获取 YAPI 接口定义的 MCP (Model Context Protocol) 工具。
+<div align="center">
 
-## 功能特性
+[![npm version](https://img.shields.io/npm/v/@rmondjone/yapi-mcp.svg)](https://www.npmjs.com/package/@rmondjone/yapi-mcp)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-3178c6?style=flat&logo=typescript)](https://www.typescriptlang.org)
+[![MCP Protocol](https://img.shields.io/badge/MCP-1.0+-00aa00?style=flat&logo=robot)](https://modelcontextprotocol.io)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-- **自动配置发现**：自动读取用户项目中的 `.env` 文件获取 YAPI 配置
-- **接口搜索**：根据关键字搜索 YAPI 接口
-- **路径获取详情**：根据接口路径获取完整接口定义
-- **分类管理**：获取项目接口分类和分类下接口
-- **规则文件路径**：返回 Claude Code 规则文件路径供用户侧 LLM 读取
+一个用于将 YAPI 接口定义无缝集成到 AI 编码工作流的 MCP (Model Context Protocol) 工具。
 
-## 安装
+</div>
 
-### 1. 安装依赖
+## ✨ 特性亮点
 
-```bash
-npm install
+| 特性 | 描述 |
+|------|------|
+| 🔍 **智能搜索** | 通过关键字快速检索 YAPI 接口，支持模糊匹配 |
+| 📍 **路径精确定位** | 根据接口路径获取完整接口定义和参数详情 |
+| 📂 **分类管理** | 获取项目接口分类树，按模块浏览接口 |
+| 🔗 **规则文件集成** | 自动发现并返回 Claude Code 规则文件路径 |
+| ⚙️ **零配置接入** | 自动读取项目 `.env` 文件，无需手动配置 |
+
+## 🏗️ 架构概览
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Claude Code                               │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       YAPI MCP Server                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │   Config    │  │    YAPI     │  │   Rules    │              │
+│  │   Loader    │  │   Client    │  │   Finder   │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        YAPI Server                               │
+│                   (https://yapi.xxxxxx.com)                     │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### 2. 编译 TypeScript
+## 🚀 快速开始
+
+### 安装
 
 ```bash
-npm run build
+# 使用 npx 直接运行（推荐）
+claude mcp add --scope user yapi-mcp -- npx -y @rmondjone/yapi-mcp
+
+# 或在 mcp.json 中手动配置
 ```
 
-## 配置
+<details>
+<summary><strong>手动配置 (展开查看)</strong></summary>
 
-### 添加 YAPI 配置
+```json
+{
+  "mcpServers": {
+    "yapi-mcp": {
+      "command": "npx",
+      "args": ["-y", "@rmondjone/yapi-mcp"]
+    }
+  }
+}
+```
 
-在你的项目根目录创建 `.env` 文件，添加以下配置：
+</details>
+
+### 配置 YAPI 连接
+
+在你的项目根目录创建 `.env` 文件：
 
 ```bash
 # YAPI 配置
@@ -36,73 +81,39 @@ YAPI_URL=https://yapi.xxxxxx.com
 YAPI_TOKEN=your_token_here
 ```
 
-- `YAPI_URL`：YAPI 服务器地址
-- `YAPI_TOKEN`：YAPI 项目的访问令牌
-
-### 获取 YAPI Token
-
+**如何获取 Token：**
 1. 登录 YAPI
-2. 进入项目设置
-3. 点击"配置Token"，复制 Token
+2. 进入项目设置 → **配置Token**
+3. 复制生成的 Token
 
-## 使用
+## 📖 使用指南
 
-### 启动 MCP 服务器
+### MCP 工具
 
-```bash
-npm run start
-```
-
-或者直接运行：
-
-```bash
-node dist/index.js
-```
-
-### MCP 工具列表
-
-| 工具名称 | 参数 | 描述 |
-|---------|------|------|
-| `search_interfaces` | `keyword: string` | 根据关键字搜索接口列表 |
-| `get_interface_by_path` | `path: string` | 根据接口路径获取接口详情 |
-| `get_project_categories` | 无 | 获取项目的接口分类列表 |
-| `get_category_interfaces` | `categoryId: number` | 获取指定分类下的接口列表 |
-| `get_project_info` | 无 | 获取项目信息（包含规则文件路径） |
-
-## 在 Claude Code 中使用
-
-### 配置 MCP
-
-在 `settings.json` 中添加：
-
-```json
-{
-  "mcpServers": {
-    "yapi-mcp": {
-      "command": "node",
-      "args": ["/path/to/yapi-mcp/dist/index.js"],
-      "env": {}
-    }
-  }
-}
-```
+| 工具 | 参数 | 说明 |
+|------|------|------|
+| `search_interfaces` | `keyword: string` | 根据关键字搜索接口 |
+| `get_interface_by_path` | `path: string` | 根据路径获取接口详情 |
+| `get_project_categories` | - | 获取项目接口分类 |
+| `get_category_interfaces` | `categoryId: number` | 获取分类下接口列表 |
+| `get_project_info` | - | 获取项目信息和规则路径 |
 
 ### 使用示例
 
 ```
-# 搜索接口
-调用 search_interfaces 工具，keyword="用户"
+# 搜索用户相关接口
+调用 search_interfaces，keyword="用户"
 
-# 获取接口详情
-调用 get_interface_by_path 工具，path="/api/user/login"
+# 获取登录接口详情
+调用 get_interface_by_path，path="/api/user/login"
 
-# 获取项目信息
-调用 get_project_info 工具
+# 获取项目信息（含规则文件）
+调用 get_project_info
 ```
 
-## 输出格式
+## 📋 输出格式
 
-### 接口定义 JSON
+### 接口定义
 
 ```json
 {
@@ -129,7 +140,7 @@ node dist/index.js
 }
 ```
 
-### 项目信息 JSON
+### 项目信息
 
 ```json
 {
@@ -150,23 +161,55 @@ node dist/index.js
 }
 ```
 
-## 工作流程
+## 🔄 工作流程
 
-1. MCP 初始化 → 自动发现用户项目 `.env`
-2. 用户调用工具 → 返回接口 JSON 或规则路径
-3. 用户侧 LLM 根据规则路径读取规则，生成对应代码
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ MCP 初始化   │ ──▶ │  用户调用工具  │ ──▶ │ LLM 生成代码  │
+│ 自动发现配置  │     │ 返回接口/规则  │     │ 遵循规则文件  │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
 
-## 规则文件
+1. **MCP 初始化** → 自动发现项目 `.env` 配置
+2. **调用工具** → 返回接口 JSON 或规则文件路径
+3. **AI 生成** → 用户侧 LLM 读取规则，生成符合规范的代码
 
-MCP 会返回以下规则文件路径：
+## 🛠️ 技术栈
 
-- **全局规则**：`~/.claude/rules/` 目录下的 `.md` 文件
-- **本地规则**：`{项目目录}/.claude/rules/` 目录下的 `.md` 文件
+<div align="center">
 
-用户侧 LLM 可根据这些路径读取规则文件，按照规则生成相应的接口代码。
+| 技术 | 用途 |
+|------|------|
+| TypeScript | 开发语言 |
+| Node.js | 运行时 |
+| @modelcontextprotocol/sdk | MCP 协议实现 |
 
-## 技术栈
+</div>
 
-- TypeScript
-- Node.js
-- @modelcontextprotocol/sdk
+## 📁 项目结构
+
+```
+yapi-mcp/
+├── src/
+│   ├── config/          # 配置加载
+│   │   ├── env.ts       # 环境变量解析
+│   │   └── index.ts     # 配置导出
+│   ├── yapi/            # YAPI 客户端
+│   │   ├── client.ts    # API 请求封装
+│   │   ├── parser.ts    # 数据解析
+│   │   └── types.ts     # 类型定义
+│   ├── rules/           # 规则文件
+│   │   └── finder.ts    # 规则路径发现
+│   └── index.ts         # MCP 服务器入口
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 PR！
+
+## 📄 许可证
+
+MIT License

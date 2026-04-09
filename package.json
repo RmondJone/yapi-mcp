@@ -1,10 +1,17 @@
 {
-  "name": "yapi-mcp",
-  "version": "1.0.0",
+  "name": "@rmondjone/yapi-mcp",
+  "version": "1.0.2",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "YAPI MCP - 获取 YAPI 接口定义的 MCP 工具",
   "main": "dist/index.js",
+  "bin": {
+    "yapi-mcp": "./dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "start": "node dist/index.js"
   },
   "dependencies": {
@@ -15,5 +22,5 @@
     "@types/node": "^20.11.0",
     "typescript": "^5.5.3"
   },
-  "private": true
+  "private": false
 }
