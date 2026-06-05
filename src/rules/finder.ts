@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { getYapiConfig, findEnvFile } from '../config/env.js';
 
 /**
  * 查找规则文件路径
@@ -43,19 +44,18 @@ export function findRulesFiles(projectPath: string): { global: string[]; local: 
 
 /**
  * 获取项目信息
+ * @param projectDir 可选，指定工程根目录，用于多工程场景
  */
-export function getProjectInfo() {
-  const { getYapiConfig, findEnvFile } = require('../config/env');
-
-  const envPath = findEnvFile();
+export function getProjectInfo(projectDir?: string) {
+  const envPath = findEnvFile(projectDir ?? process.cwd());
   if (!envPath) {
     throw new Error('未找到 .env 配置文件');
   }
 
-  const config = getYapiConfig();
+  const config = getYapiConfig(projectDir);
   const rules = findRulesFiles(config.projectPath);
 
-  // 获取项目名称（从 YAPI URL 或 env 所在目录推断）
+  // 获取项目名称（从 env 所在目录推断）
   const projectName = path.basename(config.projectPath);
 
   return {

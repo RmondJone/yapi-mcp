@@ -9,6 +9,17 @@ import {
 import { getYapiClient } from './yapi/client.js';
 import { getProjectInfo } from './rules/finder.js';
 
+/**
+ * 所有工具都支持可选的 projectDir 参数，用于多工程场景下动态读取各项目的 .env 配置
+ */
+const PROJECT_DIR_PROP = {
+  projectDir: {
+    type: 'string',
+    description:
+      '工程根目录绝对路径（多工程场景必填，服务端从该目录向上查找 .env 以读取对应项目的 YAPI 配置）',
+  },
+} as const;
+
 // 工具定义
 const tools = [
   {
@@ -16,7 +27,7 @@ const tools = [
     description: '获取项目信息（包含规则文件路径）',
     inputSchema: {
       type: 'object' as const,
-      properties: {},
+      properties: { ...PROJECT_DIR_PROP },
     },
   },
   {
@@ -24,7 +35,7 @@ const tools = [
     description: '获取项目详细信息（从 YAPI 获取项目基本信息）',
     inputSchema: {
       type: 'object' as const,
-      properties: {},
+      properties: { ...PROJECT_DIR_PROP },
     },
   },
   {
@@ -32,7 +43,7 @@ const tools = [
     description: '获取菜单列表（项目分类列表）',
     inputSchema: {
       type: 'object' as const,
-      properties: {},
+      properties: { ...PROJECT_DIR_PROP },
     },
   },
   {
@@ -45,6 +56,7 @@ const tools = [
           type: 'number',
           description: '接口 ID',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['id'],
     },
@@ -67,6 +79,7 @@ const tools = [
           type: 'number',
           description: '每页数量，默认 10',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['catid'],
     },
@@ -76,7 +89,7 @@ const tools = [
     description: '获取接口菜单列表（包含分类及其下的接口）',
     inputSchema: {
       type: 'object' as const,
-      properties: {},
+      properties: { ...PROJECT_DIR_PROP },
     },
   },
   {
@@ -93,6 +106,7 @@ const tools = [
           type: 'number',
           description: '每页数量，默认 10',
         },
+        ...PROJECT_DIR_PROP,
       },
     },
   },
@@ -114,6 +128,7 @@ const tools = [
           type: 'string',
           description: '项目 ID（可选，默认使用配置中的项目 ID）',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['name'],
     },
@@ -160,6 +175,7 @@ const tools = [
           type: 'string',
           description: '接口描述',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['title', 'catid', 'path', 'method'],
     },
@@ -210,6 +226,7 @@ const tools = [
           type: 'string',
           description: '接口描述',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['title', 'catid', 'path', 'method'],
     },
@@ -260,6 +277,7 @@ const tools = [
           type: 'string',
           description: '接口描述',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['id', 'title', 'catid', 'path', 'method'],
     },
@@ -286,6 +304,7 @@ const tools = [
           type: 'string',
           description: '导入数据 URL',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['type'],
     },
@@ -308,6 +327,7 @@ const tools = [
           type: 'number',
           description: '每页数量，默认 20',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['keyword'],
     },
@@ -326,97 +346,100 @@ const tools = [
           type: 'string',
           description: '请求方法（GET/POST/PUT/DELETE，可选，不区分大小写）',
         },
+        ...PROJECT_DIR_PROP,
       },
       required: ['path'],
     },
   },
 ];
 
-// 工具处理函数
-async function handleGetProjectInfo(): Promise<string> {
-  const info = getProjectInfo();
+// ── 工具处理函数 ────────────────────────────────────────────────────────────
+
+async function handleGetProjectInfo(args: any): Promise<string> {
+  const info = getProjectInfo(args?.projectDir);
   return JSON.stringify(info, null, 2);
 }
 
-async function handleGetProjectDetail(): Promise<string> {
-  const client = getYapiClient();
+async function handleGetProjectDetail(args: any): Promise<string> {
+  const client = getYapiClient(args?.projectDir);
   const data = await client.getProjectInfo();
   return JSON.stringify(data, null, 2);
 }
 
-async function handleGetCatMenu(): Promise<string> {
-  const client = getYapiClient();
+async function handleGetCatMenu(args: any): Promise<string> {
+  const client = getYapiClient(args?.projectDir);
   const data = await client.getCatMenu();
   return JSON.stringify(data, null, 2);
 }
 
 async function handleGetInterfaceDetail(args: any): Promise<string> {
-  const { id } = args;
-  const client = getYapiClient();
+  const { id, projectDir } = args;
+  const client = getYapiClient(projectDir);
   const data = await client.getInterfaceDetail(id);
   return JSON.stringify(data, null, 2);
 }
 
 async function handleGetCategoryInterfaces(args: any): Promise<string> {
-  const { catid, page = 1, limit = 10 } = args;
-  const client = getYapiClient();
+  const { catid, page = 1, limit = 10, projectDir } = args;
+  const client = getYapiClient(projectDir);
   const data = await client.getCategoryInterfaces(catid, page, limit);
   return JSON.stringify(data, null, 2);
 }
 
-async function handleGetInterfaceMenu(): Promise<string> {
-  const client = getYapiClient();
+async function handleGetInterfaceMenu(args: any): Promise<string> {
+  const client = getYapiClient(args?.projectDir);
   const data = await client.getMenu();
   return JSON.stringify(data, null, 2);
 }
 
 async function handleGetInterfaceList(args: any): Promise<string> {
-  const { page = 1, limit = 10 } = args;
-  const client = getYapiClient();
+  const { page = 1, limit = 10, projectDir } = args;
+  const client = getYapiClient(projectDir);
   const data = await client.getInterfaceList(page, limit);
   return JSON.stringify(data, null, 2);
 }
 
 async function handleAddCategory(args: any): Promise<string> {
-  const { name, desc, project_id } = args;
-  const client = getYapiClient();
+  const { name, desc, project_id, projectDir } = args;
+  const client = getYapiClient(projectDir);
   const data = await client.addCategory(name, desc, project_id);
   return JSON.stringify(data, null, 2);
 }
 
 async function handleAddInterface(args: any): Promise<string> {
-  const client = getYapiClient();
-  const data = await client.addInterface(args);
+  const { projectDir, ...rest } = args;
+  const client = getYapiClient(projectDir);
+  const data = await client.addInterface(rest);
   return JSON.stringify(data, null, 2);
 }
 
 async function handleSaveInterface(args: any): Promise<string> {
-  const client = getYapiClient();
-  const data = await client.saveInterface(args);
+  const { projectDir, ...rest } = args;
+  const client = getYapiClient(projectDir);
+  const data = await client.saveInterface(rest);
   return JSON.stringify(data, null, 2);
 }
 
 async function handleUpdateInterface(args: any): Promise<string> {
-  const client = getYapiClient();
-  const data = await client.updateInterface(args);
+  const { projectDir, ...rest } = args;
+  const client = getYapiClient(projectDir);
+  const data = await client.updateInterface(rest);
   return JSON.stringify(data, null, 2);
 }
 
 async function handleImportData(args: any): Promise<string> {
-  const { type, merge = 'normal', json, url } = args;
-  const client = getYapiClient();
+  const { type, merge = 'normal', json, url, projectDir } = args;
+  const client = getYapiClient(projectDir);
   const data = await client.importData(type, merge, json, url);
   return JSON.stringify(data, null, 2);
 }
 
 async function handleSearchInterface(args: any): Promise<string> {
-  const { keyword } = args;
-  const client = getYapiClient();
+  const { keyword, projectDir } = args;
+  const client = getYapiClient(projectDir);
 
-  // 获取所有接口菜单
   const menuData = await client.getMenu();
 
-  // 在本地筛选匹配的接口
   const matchedInterfaces: Array<{
     id: number;
     title: string;
@@ -436,7 +459,6 @@ async function handleSearchInterface(args: any): Promise<string> {
       const path = (iface.path || '').toLowerCase();
       const method = (iface.method || '').toLowerCase();
 
-      // 匹配标题、路径或方法
       if (
         title.includes(lowerKeyword) ||
         path.includes(lowerKeyword) ||
@@ -459,17 +481,14 @@ async function handleSearchInterface(args: any): Promise<string> {
 }
 
 async function handleGetInterfaceByPath(args: any): Promise<string> {
-  const { path, method } = args;
-  const client = getYapiClient();
+  const { path, method, projectDir } = args;
+  const client = getYapiClient(projectDir);
 
-  // 获取所有接口菜单
   const menuData = await client.getMenu();
 
-  // 标准化输入路径
   const normalizedPath = path.toLowerCase();
   const normalizedMethod = method ? method.toUpperCase() : null;
 
-  // 精确匹配
   const matchedInterfaces: Array<{
     id: number;
     title: string;
@@ -486,10 +505,8 @@ async function handleGetInterfaceByPath(args: any): Promise<string> {
       const ifacePath = (iface.path || '').toLowerCase();
       const ifaceMethod = (iface.method || '').toUpperCase();
 
-      // 路径完全匹配
       let isMatch = ifacePath === normalizedPath;
 
-      // 如果指定了方法，还需要方法匹配
       if (isMatch && normalizedMethod) {
         isMatch = ifaceMethod === normalizedMethod;
       }
@@ -511,7 +528,8 @@ async function handleGetInterfaceByPath(args: any): Promise<string> {
   return JSON.stringify(matchedInterfaces, null, 2);
 }
 
-// 创建服务器
+// ── MCP Server ───────────────────────────────────────────────────────────────
+
 const server = new Server(
   {
     name: 'yapi-mcp',
@@ -524,12 +542,10 @@ const server = new Server(
   }
 );
 
-// 处理工具列表请求
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return { tools };
 });
 
-// 处理工具调用请求
 server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   const { name, arguments: args } = request.params;
 
@@ -538,13 +554,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
 
     switch (name) {
       case 'get_project_info':
-        result = await handleGetProjectInfo();
+        result = await handleGetProjectInfo(args);
         break;
       case 'get_project_detail':
-        result = await handleGetProjectDetail();
+        result = await handleGetProjectDetail(args);
         break;
       case 'get_cat_menu':
-        result = await handleGetCatMenu();
+        result = await handleGetCatMenu(args);
         break;
       case 'get_interface_detail':
         result = await handleGetInterfaceDetail(args);
@@ -553,7 +569,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
         result = await handleGetCategoryInterfaces(args);
         break;
       case 'get_interface_menu':
-        result = await handleGetInterfaceMenu();
+        result = await handleGetInterfaceMenu(args);
         break;
       case 'get_interface_list':
         result = await handleGetInterfaceList(args);
@@ -604,7 +620,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   }
 });
 
-// 启动服务器
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);

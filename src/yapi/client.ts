@@ -9,8 +9,10 @@ export class YapiClient {
   private token: string;
   private projectId: string;
 
-  constructor(config?: { url?: string; token?: string; projectId?: string }) {
-    const yapiConfig = config || getYapiConfig();
+  constructor(config?: { url?: string; token?: string; projectId?: string; projectDir?: string }) {
+    const yapiConfig = (config?.url && config?.token)
+      ? { url: config.url, token: config.token, projectId: config.projectId, projectPath: '' }
+      : getYapiConfig(config?.projectDir);
     this.baseUrl = yapiConfig.url!;
     this.token = yapiConfig.token!;
     this.projectId = yapiConfig.projectId || '';
@@ -271,13 +273,25 @@ export class YapiClient {
 }
 
 /**
- * 获取默认客户端实例
+ * 获取 YAPI 客户端实例
+ * @param projectDir 可选，指定工程目录，用于在多工程场景下读取对应项目的 .env 配置
+ *                   传入时每次调用创建新实例；不传时使用全局缓存实例
  */
-let defaultClient: YapiClient | null = null;
+const clientCache = new Map<string, YapiClient>();
 
-export function getYapiClient(): YapiClient {
-  if (!defaultClient) {
-    defaultClient = new YapiClient();
+export function getYapiClient(projectDir?: string): YapiClient {
+  if (projectDir) {
+    // 多工程场景：按工程目录缓存，避免重复解析 .env
+    if (!clientCache.has(projectDir)) {
+      clientCache.set(projectDir, new YapiClient({ projectDir }));
+    }
+    return clientCache.get(projectDir)!;
   }
-  return defaultClient;
+
+  // 兜底：使用不带 projectDir 的全局实例
+  const GLOBAL_KEY = '__global__';
+  if (!clientCache.has(GLOBAL_KEY)) {
+    clientCache.set(GLOBAL_KEY, new YapiClient());
+  }
+  return clientCache.get(GLOBAL_KEY)!;
 }
